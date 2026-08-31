@@ -1,0 +1,169 @@
+{
+  "name": "My workflow 11",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "21e78f2c-2bef-4597-a58c-d70b2cc615cf",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6707fcb-fd3a-439d-b5e6-fd738c1700ff",
+      "name": "Webhook",
+      "webhookId": "21e78f2c-2bef-4597-a58c-d70b2cc615cf"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Write a high-conversion, professional cold email for the client named {{ $json.body.clientName }} offering the service of {{ $json.body.service }}. MY INFORMATION: My name is Farzeen Ali and my company is Techzeen. STRICT RULES: You must start the response directly with 'Subject:'. Do not use any brackets like [Your Name], [Your Company], or [Insert Phone]. Replace all such placeholders with the information I provided. If some information is missing, simply omit that part instead of using a bracket. Do not include any introductory phrases like 'Sure' or 'Here is your draft'. Only provide the final email content in English.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "65aef1ce-19d1-420b-add3-d883b3af75a9",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hSKeqZlIiyuSfzKa",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\n\nlet rawText = \"\";\n\ntry {\n    rawText = inputData.output[0].content[0].text; \n} catch (e) {\n\n    rawText = inputData.output[0].content[0].text || \"No text found\";\n}\n\nconst parts = rawText.split('\\n\\n');\nconst subject = parts[0].replace('Subject: ', '').trim();\nconst body = parts.slice(1).join('\\n\\n').trim();\n\nreturn {\n  subject: subject,\n  body: body\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "6ecf5dfd-3046-474a-8e2d-5e13ec6004ea",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.clientEmail }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "a59046e4-cbfa-4f20-9b98-e4daade662eb",
+      "name": "Send a message",
+      "webhookId": "87362eb6-a9f7-438f-96e3-80a4a0f4d635",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Sa4e14OshfuAZpd0",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Email Sent Successfully!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        976,
+        0
+      ],
+      "id": "dd8f5ec5-3682-4435-a264-819dd6a3bc54",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3f588582-86ce-4e50-be87-c3b7a8b17ac9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6a0af94cb7e217ea4155e97831712b29dd715e4b0fad7069dfbd34219e991728"
+  },
+  "nodeGroups": [],
+  "id": "LxBBLon1Hm4ePK1q",
+  "tags": []
+}
